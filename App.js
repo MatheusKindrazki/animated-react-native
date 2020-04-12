@@ -1,3 +1,4 @@
+/* eslint-disable no-sparse-arrays */
 import React, {useState} from 'react';
 
 import {
@@ -23,12 +24,18 @@ export default function AnimatedUser() {
   const [userSelected, setUserSelected] = useState(null);
   const [userInfoVisible, setUserInfoVisible] = useState(false);
 
-  const scrollOffeset = new Animated.Value(0);
+  const scrollOffset = new Animated.Value(0);
+  const listProgress = new Animated.Value(0);
 
-  function selectUser(user) {
+  const selectUser = (user) => {
+    Animated.timing(listProgress, {
+      toValue: 100,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start(() => setUserInfoVisible(true));
+
     setUserSelected(user);
-    setUserInfoVisible(true);
-  }
+  };
 
   function renderDetail() {
     return (
@@ -40,13 +47,27 @@ export default function AnimatedUser() {
 
   function renderList() {
     return (
-      <View style={styles.container}>
+      <Animated.View
+        style={[
+          styles.container,
+          {
+            transform: [
+              {
+                translateX: listProgress.interpolate({
+                  inputRange: [0, 100],
+                  outputRange: [0, width],
+                }),
+              },
+            ],
+          },
+          ,
+        ]}>
         <ScrollView
           scrollEventThrottle={16}
           onScroll={Animated.event([
             {
               nativeEvent: {
-                contentOffset: {y: scrollOffeset},
+                contentOffset: {y: scrollOffset},
               },
             },
           ])}>
@@ -54,7 +75,7 @@ export default function AnimatedUser() {
             <User key={user.id} user={user} onPress={() => selectUser(user)} />
           ))}
         </ScrollView>
-      </View>
+      </Animated.View>
     );
   }
 
@@ -66,7 +87,7 @@ export default function AnimatedUser() {
         style={[
           styles.header,
           {
-            height: scrollOffeset.interpolate({
+            height: scrollOffset.interpolate({
               inputRange: [0, 150],
               outputRange: [200, 50],
               extrapolate: 'clamp',
@@ -82,7 +103,7 @@ export default function AnimatedUser() {
           style={[
             styles.headerText,
             {
-              fontSize: scrollOffeset.interpolate({
+              fontSize: scrollOffset.interpolate({
                 inputRange: [120, 140],
                 outputRange: [20, 16],
               }),
