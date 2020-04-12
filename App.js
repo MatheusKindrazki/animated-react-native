@@ -1,32 +1,55 @@
+/* eslint-disable no-sparse-arrays */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useEffect} from 'react';
-import {View, Animated, StyleSheet} from 'react-native';
+import React from 'react';
+import {View, Animated, StyleSheet, PanResponder} from 'react-native';
 
 export default function AnimatedCourse() {
-  const ballY = new Animated.Value(0);
+  let ball = new Animated.ValueXY({x: 0, y: 0});
 
-  useEffect(() => {
-    Animated.sequence([
-      Animated.timing(ballY, {
-        toValue: 300,
-        duration: 1000,
-      }),
-    ]).start();
-  }, []);
+  const panResp = PanResponder.create({
+    onMoveShouldSetPanResponder: (e, gestureState) => true,
+
+    onPanResponderGrant: (e, gestureState) => {
+      ball.setOffset({
+        x: ball.x._value,
+        y: ball.y._value,
+      });
+
+      ball.setValue({x: 0, y: 0});
+    },
+
+    onPanResponderMove: Animated.event(
+      [
+        null,
+        {
+          dx: ball.x,
+          dy: ball.y,
+        },
+      ],
+      {
+        listener: (e, gestureState) => {
+          console.log(gestureState);
+        },
+      },
+    ),
+
+    // Reseta o offset da bola
+    onPanResponderRelease: () => {
+      ball.flattenOffset();
+    },
+  });
 
   return (
     <View style={style.container}>
+      {/* panHandlers é utilizado para passar as propriedades de gestos para o Animated View */}
       <Animated.View
+        {...panResp.panHandlers}
         style={[
           style.ball,
           {
-            top: ballY,
-            opacity: ballY.interpolate({
-              inputRange: [0, 300],
-              outputRange: [1, 0],
-              extrapolate: 'clamp',
-            }),
+            transform: [{translateX: ball.x}, {translateY: ball.y}],
           },
+          ,
         ]}
       />
     </View>
