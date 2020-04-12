@@ -3,14 +3,11 @@ import React, {useState} from 'react';
 
 import {
   View,
-  Image,
-  Text,
   Platform,
   StatusBar,
   StyleSheet,
   Dimensions,
   ScrollView,
-  TouchableOpacity,
   Animated,
 } from 'react-native';
 

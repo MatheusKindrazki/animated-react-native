@@ -12,14 +12,16 @@ import {
   Dimensions,
   TouchableWithoutFeedback,
   Animated,
+  PanResponder,
 } from 'react-native';
+
+const {width} = Dimensions.get('window');
 
 export default function User(props) {
   const opacity = new Animated.Value(0);
   const offset = new Animated.ValueXY({x: 0, y: 50});
 
   const {user} = props;
-
   useEffect(() => {
     Animated.parallel([
       Animated.spring(offset, {
@@ -35,10 +37,53 @@ export default function User(props) {
     ]).start();
   }, []);
 
+  const panReponder = PanResponder.create({
+    onPanResponderTerminationRequest: () => false,
+    onMoveShouldSetPanResponder: () => true,
+
+    onPanResponderMove: Animated.event([
+      null,
+      {
+        dx: offset.x,
+      },
+    ]),
+
+    // Volta para a posição atual
+    onPanResponderRelease: () => {
+      if (offset.x._value < -200) {
+        Alert.alert('Delete!');
+      }
+
+      Animated.spring(offset.x, {
+        toValue: 0,
+        bounciness: 10,
+      }).start();
+    },
+
+    onPanResponderTerminate: () => {
+      Animated.spring(offset.x, {
+        toValue: 0,
+        bounciness: 10,
+      }).start();
+    },
+  });
+
   return (
     <Animated.View
+      {...panReponder.panHandlers}
       style={[
-        {transform: [...offset.getTranslateTransform()], opacity: opacity},
+        {
+          transform: [
+            ...offset.getTranslateTransform(),
+            {
+              rotateZ: offset.x.interpolate({
+                inputRange: [width * -1, width],
+                outputRange: ['-50deg', '50deg'],
+              }),
+            },
+          ],
+          opacity: opacity,
+        },
       ]}>
       <TouchableWithoutFeedback onPress={props.onPress}>
         <View style={styles.userContainer}>
