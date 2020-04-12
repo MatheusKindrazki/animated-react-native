@@ -1,72 +1,94 @@
-/* eslint-disable no-sparse-arrays */
-/* eslint-disable react-hooks/exhaustive-deps */
-import React from 'react';
-import {View, Animated, StyleSheet, PanResponder} from 'react-native';
+import React, {useState} from 'react';
 
-export default function AnimatedCourse() {
-  let ball = new Animated.ValueXY({x: 0, y: 0});
+import {
+  View,
+  Image,
+  Text,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  Dimensions,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 
-  const panResp = PanResponder.create({
-    onMoveShouldSetPanResponder: (e, gestureState) => true,
+import User from './components/User';
 
-    onPanResponderGrant: (e, gestureState) => {
-      ball.setOffset({
-        x: ball.x._value,
-        y: ball.y._value,
-      });
+import {users} from './user';
 
-      ball.setValue({x: 0, y: 0});
-    },
+const {width} = Dimensions.get('window');
 
-    onPanResponderMove: Animated.event(
-      [
-        null,
-        {
-          dx: ball.x,
-          dy: ball.y,
-        },
-      ],
-      {
-        listener: (e, gestureState) => {
-          console.log(gestureState);
-        },
-      },
-    ),
+export default function AnimatedUser() {
+  const [userSelected, setUserSelected] = useState(null);
+  const [userInfoVisible, setUserInfoVisible] = useState(false);
 
-    // Reseta o offset da bola
-    onPanResponderRelease: () => {
-      ball.flattenOffset();
-    },
-  });
+  function selectUser(user) {
+    setUserSelected(user);
+    setUserInfoVisible(true);
+  }
+
+  function renderDetail() {
+    return (
+      <View>
+        <User user={userSelected} onPress={() => {}} />
+      </View>
+    );
+  }
+
+  function renderList() {
+    return (
+      <View style={styles.container}>
+        <ScrollView>
+          {users.map((user) => (
+            <User key={user.id} user={user} onPress={() => selectUser(user)} />
+          ))}
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
-    <View style={style.container}>
-      {/* panHandlers é utilizado para passar as propriedades de gestos para o Animated View */}
-      <Animated.View
-        {...panResp.panHandlers}
-        style={[
-          style.ball,
-          {
-            transform: [{translateX: ball.x}, {translateY: ball.y}],
-          },
-          ,
-        ]}
-      />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+
+      <View style={styles.header}>
+        <Image
+          style={styles.headerImage}
+          source={userSelected ? {uri: userSelected.thumbnail} : null}
+        />
+
+        <Text style={styles.headerText}>
+          {userSelected ? userSelected.name : 'GoNative'}
+        </Text>
+      </View>
+      {userInfoVisible ? renderDetail() : renderList()}
     </View>
   );
 }
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#7159c1',
-    padding: 50,
   },
 
-  ball: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: 'white',
+  header: {
+    paddingTop: Platform.OS === 'ios' ? 40 : 20,
+    paddingHorizontal: 15,
+    backgroundColor: '#2E93E5',
+    height: 200,
+  },
+
+  headerImage: {
+    ...StyleSheet.absoluteFillObject,
+  },
+
+  headerText: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#FFF',
+    backgroundColor: 'transparent',
+    position: 'absolute',
+    left: 15,
+    bottom: 20,
   },
 });
