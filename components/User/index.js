@@ -37,7 +37,9 @@ export default function User(props) {
 
   return (
     <Animated.View
-      style={[{transform: [{translateY: offset.y}], opacity: opacity}]}>
+      style={[
+        {transform: [...offset.getTranslateTransform()], opacity: opacity},
+      ]}>
       <TouchableWithoutFeedback onPress={props.onPress}>
         <View style={styles.userContainer}>
           <Image style={styles.thumbnail} source={{uri: user.thumbnail}} />
