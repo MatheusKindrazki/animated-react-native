@@ -24,16 +24,22 @@ export default function AnimatedUser() {
   const [userSelected, setUserSelected] = useState(null);
   const [userInfoVisible, setUserInfoVisible] = useState(false);
 
-  const scrollOffset = new Animated.Value(0);
-  const listProgress = new Animated.Value(0);
+  const [scrollOffset] = useState(new Animated.Value(0));
+  const [listProgress] = useState(new Animated.Value(0));
+  const [userInfoProgress] = useState(new Animated.Value(0));
 
   const selectUser = (user) => {
-    Animated.timing(listProgress, {
-      toValue: 100,
-      duration: 1000,
-      useNativeDriver: true,
-    }).start(() => setUserInfoVisible(true));
+    Animated.sequence([
+      Animated.timing(listProgress, {
+        toValue: 100,
+        duration: 300,
+      }),
 
+      Animated.timing(userInfoProgress, {
+        toValue: 100,
+        duration: 500,
+      }),
+    ]).start(() => setUserInfoVisible(true));
     setUserSelected(user);
   };
 
@@ -94,11 +100,18 @@ export default function AnimatedUser() {
             }),
           },
         ]}>
-        <Image
-          style={styles.headerImage}
+        <Animated.Image
+          style={[
+            styles.headerImage,
+            {
+              opacity: userInfoProgress.interpolate({
+                inputRange: [0, 100],
+                outputRange: [0, 1],
+              }),
+            },
+          ]}
           source={userSelected ? {uri: userSelected.thumbnail} : null}
         />
-
         <Animated.Text
           style={[
             styles.headerText,
@@ -107,9 +120,33 @@ export default function AnimatedUser() {
                 inputRange: [120, 140],
                 outputRange: [20, 16],
               }),
+              transform: [
+                {
+                  translateX: userInfoProgress.interpolate({
+                    inputRange: [0, 100],
+                    outputRange: [0, width],
+                  }),
+                },
+              ],
             },
           ]}>
-          {userSelected ? userSelected.name : 'GoNative'}
+          GoNative
+        </Animated.Text>
+        <Animated.Text
+          style={[
+            styles.headerText,
+            {
+              transform: [
+                {
+                  translateX: userInfoProgress.interpolate({
+                    inputRange: [0, 100],
+                    outputRange: [width * -1, 0],
+                  }),
+                },
+              ],
+            },
+          ]}>
+          {userSelected ? userSelected.name : null}
         </Animated.Text>
       </Animated.View>
       {userInfoVisible ? renderDetail() : renderList()}
