@@ -1,4 +1,5 @@
-import React from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, {useEffect} from 'react';
 
 // import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -10,28 +11,50 @@ import {
   StyleSheet,
   Dimensions,
   TouchableWithoutFeedback,
+  Animated,
 } from 'react-native';
 
 export default function User(props) {
+  const opacity = new Animated.Value(0);
+  const offset = new Animated.ValueXY({x: 0, y: 50});
+
   const {user} = props;
 
-  return (
-    <TouchableWithoutFeedback onPress={props.onPress}>
-      <View style={styles.userContainer}>
-        <Image style={styles.thumbnail} source={{uri: user.thumbnail}} />
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(offset, {
+        toValue: 0,
+        speed: 5,
+        bounciness: 15,
+      }),
 
-        <View style={[styles.infoContainer, {backgroundColor: user.color}]}>
-          <View style={styles.bioContainer}>
-            <Text style={styles.name}>{user.name.toUpperCase()}</Text>
-            <Text style={styles.description}>{user.description}</Text>
-          </View>
-          <View style={styles.likesContainer}>
-            {/* <Icon name="heart" size={12} color="#FFF" /> */}
-            <Text style={styles.likes}>{user.likes}</Text>
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 500,
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={[{transform: [{translateY: offset.y}], opacity: opacity}]}>
+      <TouchableWithoutFeedback onPress={props.onPress}>
+        <View style={styles.userContainer}>
+          <Image style={styles.thumbnail} source={{uri: user.thumbnail}} />
+
+          <View style={[styles.infoContainer, {backgroundColor: user.color}]}>
+            <View style={styles.bioContainer}>
+              <Text style={styles.name}>{user.name.toUpperCase()}</Text>
+              <Text style={styles.description}>{user.description}</Text>
+            </View>
+            <View style={styles.likesContainer}>
+              {/* <Icon name="heart" size={12} color="#FFF" /> */}
+              <Text style={styles.likes}>{user.likes}</Text>
+            </View>
           </View>
         </View>
-      </View>
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
+    </Animated.View>
   );
 }
 
